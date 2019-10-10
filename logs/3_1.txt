@@ -1,0 +1,1 @@
+A maximum cap for d = 1, F = 3, has size 2 and is: [array([0]), array([1])]

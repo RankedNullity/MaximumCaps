@@ -34,7 +34,7 @@ def vectorized_add_nocuda(a, b, field_size):
 def triplet_add_nocuda(a, b, c, field_size):
     return np.mod(a + b + c, field_size)
 
-dim = 3
+dim = 4
 field_size = 3
 cache = [None] * (field_size ** dim)
 
@@ -55,9 +55,9 @@ def find_maximum_cap(dim, field_size, current_sum=np.zeros(dim, dtype=int), curr
         current_sum = vector with the sum of each vector in the field.
         '''
     if len(current_cap) > field_size - 1 and bad_cap_isLinear(current_cap, dim, field_size): 
-        debug_log.write("Reached stop condition with: {}".format(current_cap))
+        #debug_log.write("Reached stop condition with: {}".format(current_cap))
         current_cap.pop()
-        debug_log.write("Cap: {} \n".format(current_cap))
+        debug_log.write("{}\n".format(current_cap))
         return current_cap
 
     maximum_cap = []
@@ -85,7 +85,7 @@ def find_maximum_cap(dim, field_size, current_sum=np.zeros(dim, dtype=int), curr
 
 maximum_cap = find_maximum_cap(dim, field_size)
 
-with open(os.getcwd() + "\\logs\\" + str(field_size) + "_" + str(dim) +".txt", 'w+') as file:
+with open(os.getcwd() + "\\logs\\" + str(field_size) + "_" + str(dim) +"_solution.txt", 'w+') as file:
     file.write("A maximum cap for d = {}, F = {}, has size {} and is: {}".format(dim, field_size, len(maximum_cap), maximum_cap))
     file.close()
 

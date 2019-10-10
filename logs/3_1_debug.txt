@@ -1,1 +1,0 @@
-Reached stop condition with: [array([0]), array([1]), array([2])]Cap: [array([0]), array([1])] 

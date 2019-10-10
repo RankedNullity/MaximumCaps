@@ -1,6 +1,7 @@
 import numpy as np 
 from numba import vectorize
 import os
+from itertools import combinations
 
 @vectorize(['int32(int32, int32)'], target='cuda')
 def vectorized_add(a, b):
@@ -30,18 +31,30 @@ def vectorized_add(a, b, field_size):
 def vectorized_add_nocuda(a, b, field_size):
     return np.mod(a + b, field_size)
 
-dim = 2
+def triplet_add_nocuda(a, b, c, field_size):
+    return np.mod(a + b + c, field_size)
+
+dim = 3
 field_size = 3
 cache = [None] * (field_size ** dim)
 
 debug_log = open(os.getcwd() + "\\logs\\" + str(field_size) + "_" + str(dim) +"_debug.txt", 'w+')
+
+# TODO Write a less bad implementation of linear check
+def bad_cap_isLinear(cap, dim, field_size):
+    for i, vec in enumerate(cap):
+        for j in range(i + 1, len(cap)):
+            for k in range(j + 1, len(cap)):
+                if not triplet_add_nocuda(cap[i], cap[j], cap[k], field_size).any():
+                    return True
+    return False
 
 def find_maximum_cap(dim, field_size, current_sum=np.zeros(dim, dtype=int), current_cap=[], current_index=0):
     '''dim = size of vector
         field_size = possible values in vector
         current_sum = vector with the sum of each vector in the field.
         '''
-    if np.count_nonzero(current_sum) < dim  and len(current_cap) > 1: 
+    if len(current_cap) > field_size - 1 and bad_cap_isLinear(current_cap, dim, field_size): 
         debug_log.write("Reached stop condition with: {}".format(current_cap))
         current_cap.pop()
         debug_log.write("Cap: {} \n".format(current_cap))
@@ -60,17 +73,15 @@ def find_maximum_cap(dim, field_size, current_sum=np.zeros(dim, dtype=int), curr
         #print("Current cap before: {}".format(current_cap))
         current_cap.append(current_vec)
         current_sum = vectorized_add_nocuda(current_vec, current_sum, field_size)
-        print("Current cap: {}".format(current_cap))
-        print("current sum: {}".format(current_sum))
+        #print("Current cap: {}".format(current_cap))
+        #print("current sum: {}".format(current_sum))
         
         maximal_cap = find_maximum_cap(dim, field_size, current_sum.copy(), current_cap.copy(), i + 1)
         current_cap.pop()
 
         if len(maximal_cap) > len(maximum_cap):
             maximum_cap = maximal_cap
-
     return maximum_cap
-
 
 maximum_cap = find_maximum_cap(dim, field_size)
 

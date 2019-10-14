@@ -36,7 +36,7 @@ def vectorized_add_nocuda(a, b, field_size):
 def triplet_add_nocuda(a, b, c, field_size):
     return np.mod(a + b + c, field_size)
 
-dim = 4
+dim = 3
 field_size = 3
 cache = [None] * (field_size ** dim)
 
@@ -44,11 +44,11 @@ debug_log = open(os.getcwd() + "\\logs\\" + str(field_size) + "_" + str(dim) +"_
 
 # TODO Write a better implementation of linear check
 def bad_cap_isLinear(cap, dim, field_size):
-    for i, vec in enumerate(cap):
-        for j in range(i + 1, len(cap)):
-            for k in range(j + 1, len(cap)):
-                if not triplet_add_nocuda(cap[i], cap[j], cap[k], field_size).any():
-                    return True
+    for i, vec in enumerate(cap[:-1]):
+        for j in range(i + 1, len(cap) - 1):
+            #Assume that the list was a cap before adding a new element. Therefore, only need to check that last element is not a cap. 
+            if not triplet_add_nocuda(cap[i], cap[j], cap[len(cap) - 1], field_size).any():
+                return True
     return False
 
 def find_maximum_cap(dim, field_size, current_sum=np.zeros(dim, dtype=int), current_cap=[], current_index=0):

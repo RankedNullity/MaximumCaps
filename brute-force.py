@@ -7,6 +7,7 @@ from itertools import combinations
 def vectorized_add(a, b):
     return a + b
 
+''' Unused Code
 def generate_basis(dim, index):
     arr = np.zeros(dim, dtype = int)
     arr[index] = 1
@@ -17,6 +18,7 @@ def generate_all_basis(dim, field_size):
     for i in range(dim):
         collection.append(generate_basis(dim, i))
     return collection
+'''
 
 def generate_vector(dim, field_size, index):
     vec = np.zeros(dim, dtype=int)
@@ -40,7 +42,7 @@ cache = [None] * (field_size ** dim)
 
 debug_log = open(os.getcwd() + "\\logs\\" + str(field_size) + "_" + str(dim) +"_debug.txt", 'w+')
 
-# TODO Write a less bad implementation of linear check
+# TODO Write a better implementation of linear check
 def bad_cap_isLinear(cap, dim, field_size):
     for i, vec in enumerate(cap):
         for j in range(i + 1, len(cap)):

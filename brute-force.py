@@ -1,13 +1,13 @@
 import numpy as np 
-from numba import vectorize
+#from numba import vectorize
 import os
 from itertools import combinations
 
+''' Unused Code
 @vectorize(['int32(int32, int32)'], target='cuda')
 def vectorized_add(a, b):
     return a + b
 
-''' Unused Code
 def generate_basis(dim, index):
     arr = np.zeros(dim, dtype = int)
     arr[index] = 1
@@ -18,7 +18,6 @@ def generate_all_basis(dim, field_size):
     for i in range(dim):
         collection.append(generate_basis(dim, i))
     return collection
-'''
 
 def generate_vector(dim, field_size, index):
     vec = np.zeros(dim, dtype=int)
@@ -29,6 +28,7 @@ def generate_vector(dim, field_size, index):
 @vectorize(['int32(int32, int32, int32)'], target='cuda')
 def vectorized_add(a, b, field_size):
     return a + b % field_size
+'''
 
 def vectorized_add_nocuda(a, b, field_size):
     return np.mod(a + b, field_size)

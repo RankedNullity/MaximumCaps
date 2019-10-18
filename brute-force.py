@@ -34,7 +34,7 @@ def vectorized_add_nocuda(a, b, field_size):
 def triplet_add_nocuda(a, b, c, field_size):
     return np.mod(a + b + c, field_size)
 
-dim = 3
+dim = 4
 field_size = 3
 cache = [None] * (field_size ** dim)
 

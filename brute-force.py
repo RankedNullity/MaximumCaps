@@ -1,8 +1,9 @@
 import numpy as np 
-from numba import vectorize
+#from numba import vectorize
 import os
 from itertools import combinations
 
+''' Unused Code
 @vectorize(['int32(int32, int32)'], target='cuda')
 def vectorized_add(a, b):
     return a + b
@@ -27,6 +28,7 @@ def generate_vector(dim, field_size, index):
 @vectorize(['int32(int32, int32, int32)'], target='cuda')
 def vectorized_add(a, b, field_size):
     return a + b % field_size
+'''
 
 def vectorized_add_nocuda(a, b, field_size):
     return np.mod(a + b, field_size)
@@ -40,7 +42,7 @@ cache = [None] * (field_size ** dim)
 
 debug_log = open(os.getcwd() + "\\logs\\" + str(field_size) + "_" + str(dim) +"_debug.txt", 'w+')
 
-# TODO Write a less bad implementation of linear check
+# TODO Write a better implementation of linear check
 def bad_cap_isLinear(cap, dim, field_size):
     for i, vec in enumerate(cap[:-1]):
         for j in range(i + 1, len(cap) - 1):

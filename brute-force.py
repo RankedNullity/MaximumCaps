@@ -2,16 +2,16 @@ import numpy as np
 #from numba import vectorize
 import os
 from itertools import combinations
+import os.path as path
+import pickle
+import sys
 
 ''' Unused Code
 @vectorize(['int32(int32, int32)'], target='cuda')
 def vectorized_add(a, b):
     return a + b
 
-def generate_basis(dim, index):
-    arr = np.zeros(dim, dtype = int)
-    arr[index] = 1
-    return arr
+
 
 def generate_all_basis(dim, field_size):
     collection = []
@@ -19,16 +19,22 @@ def generate_all_basis(dim, field_size):
         collection.append(generate_basis(dim, i))
     return collection
 
+@vectorize(['int32(int32, int32, int32)'], target='cuda')
+def vectorized_add(a, b, field_size):
+    return a + b % field_size
+'''
+def generate_basis(dim, index):
+    arr = np.zeros(dim, dtype = int)
+    arr[index] = 1
+    return arr
+
 def generate_vector(dim, field_size, index):
     vec = np.zeros(dim, dtype=int)
     for i in range(dim):
         vec[dim - 1 - i] = index // (field_size ** (i)) % field_size
     return vec
 
-@vectorize(['int32(int32, int32, int32)'], target='cuda')
-def vectorized_add(a, b, field_size):
-    return a + b % field_size
-'''
+
 
 def vectorized_add_nocuda(a, b, field_size):
     return np.mod(a + b, field_size)
@@ -36,8 +42,8 @@ def vectorized_add_nocuda(a, b, field_size):
 def triplet_add_nocuda(a, b, c, field_size):
     return np.mod(a + b + c, field_size)
 
-dim = 4
-field_size = 3
+dim = 3 if len(sys.argv) < 3 else int(sys.argv[2])
+field_size = 3 if len(sys.argv) < 3 else int(sys.argv[1])
 cache = [None] * (field_size ** dim)
 
 debug_log = open(os.getcwd() + "\\logs\\" + str(field_size) + "_" + str(dim) +"_debug.txt", 'w+')
@@ -45,9 +51,11 @@ debug_log = open(os.getcwd() + "\\logs\\" + str(field_size) + "_" + str(dim) +"_
 # TODO Write a better implementation of linear check
 def bad_cap_isLinear(cap, dim, field_size):
     for i, vec in enumerate(cap[:-1]):
+        if not (cap[-1] - vec).any():
+            return True
         for j in range(i + 1, len(cap) - 1):
-            #Assume that the list was a cap before adding a new element. Therefore, only need to check that last element is not a cap. 
-            if not triplet_add_nocuda(cap[i], cap[j], cap[len(cap) - 1], field_size).any():
+            #Assume that the list was a valid cap before adding a new element. Therefore, only need to check that last element is not a cap. 
+            if not triplet_add_nocuda(vec, cap[j], cap[-1], field_size).any():
                 return True
     return False
 
@@ -85,10 +93,32 @@ def find_maximum_cap(dim, field_size, current_sum=np.zeros(dim, dtype=int), curr
             maximum_cap = maximal_cap
     return maximum_cap
 
-maximum_cap = find_maximum_cap(dim, field_size)
+answer_file = os.getcwd() + "\\logs\\" + str(field_size) + "_" + str(dim) + "_solution.txt"
+previous_sol =  os.getcwd() + "\\logs\\" + str(field_size) + "_" + str(dim - 1) + ".dat"
 
-with open(os.getcwd() + "\\logs\\" + str(field_size) + "_" + str(dim) +"_solution.txt", 'w+') as file:
-    file.write("A maximum cap for d = {}, F = {}, has size {} and is: {}".format(dim, field_size, len(maximum_cap), maximum_cap))
-    file.close()
+
+if path.exists(answer_file):
+    f = open(answer_file, "r")
+    for line in f:
+        print(line)
+    f.close()
+else:
+    if path.exists(previous_sol):
+        with open(previous_sol, 'rb') as f:
+            previous_sol = pickle.load(f)
+        for i, vec in enumerate(previous_sol):
+            previous_sol[i] = np.concatenate((vec, np.zeros(1)), axis = None)
+        maximum_cap = find_maximum_cap(dim, field_size, current_cap = previous_sol)
+    else:
+        maximum_cap = find_maximum_cap(dim, field_size, current_cap= [generate_basis(dim, 0)])
+
+    String response = "A maximum cap for d = {}, F = {}, has size {} and is: {}".format(dim, field_size, len(maximum_cap), maximum_cap)
+    print(response)
+    with open(os.getcwd() + "\\logs\\" + str(field_size) + "_" + str(dim) + "_solution.txt", 'w+') as file:
+        file.write(response)
+
+    with open(os.getcwd() + "\\logs\\" + str(field_size) + "_" + str(dim) + ".dat", "wb") as file:
+        pickle.dump(maximum_cap, file)
+
 
 debug_log.close()

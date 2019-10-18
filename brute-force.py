@@ -112,7 +112,7 @@ else:
     else:
         maximum_cap = find_maximum_cap(dim, field_size, current_cap= [generate_basis(dim, 0)])
 
-    String response = "A maximum cap for d = {}, F = {}, has size {} and is: {}".format(dim, field_size, len(maximum_cap), maximum_cap)
+    response = "A maximum cap for d = {}, F = {}, has size {} and is: {}".format(dim, field_size, len(maximum_cap), maximum_cap)
     print(response)
     with open(os.getcwd() + "\\logs\\" + str(field_size) + "_" + str(dim) + "_solution.txt", 'w+') as file:
         file.write(response)

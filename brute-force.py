@@ -1,11 +1,10 @@
 import numpy as np 
-from numba import vectorize
 import os
 from itertools import combinations
+'''
+Python file for recursively finding 
 
-@vectorize(['int32(int32, int32)'], target='cuda')
-def vectorized_add(a, b):
-    return a + b
+'''
 
 ''' Unused Code
 def generate_basis(dim, index):
@@ -26,9 +25,6 @@ def generate_vector(dim, field_size, index):
         vec[dim - 1 - i] = index // (field_size ** (i)) % field_size
     return vec
 
-@vectorize(['int32(int32, int32, int32)'], target='cuda')
-def vectorized_add(a, b, field_size):
-    return a + b % field_size
 
 def vectorized_add_nocuda(a, b, field_size):
     return np.mod(a + b, field_size)

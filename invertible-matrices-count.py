@@ -18,3 +18,8 @@ for i in range(dim_size):
 print(count)
 print(l)
 print(len(l))
+
+if not __debug__:
+    print("Debug")
+else: 
+    print("No debug")

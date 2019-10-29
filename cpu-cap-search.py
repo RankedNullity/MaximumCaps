@@ -63,6 +63,7 @@ def find_verifier(d):
         return
 
 def convert_to_index(vector, dim, field_size):
+    '''Takes the vector and converts it to the unique index under F_{fieldsize}^{dim}'''
     assert(dim == len(vector))
     index = 0
     for i in range(0, dim):
@@ -70,13 +71,12 @@ def convert_to_index(vector, dim, field_size):
     return index
 
 def fill_initial_set(cap, set, dim, field_size):
+    '''Mutates set to be the accurate hashset for the given cap.'''
     for vec in cap:
         index= convert_to_index(vec, dim, field_size)
         set[index] = True
     return set
 
-
-# TODO: Replace current cap with a hashset so the check is cheaper and duplicates are avoided.
 def find_maximum_cap(dim, field_size, d=1, current_cap= [np.zeros(dim, dtype=int)], current_index=1, illegal_check=cap_isLinear, 
                     hashset=None):
     '''dim = size of vector

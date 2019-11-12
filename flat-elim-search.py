@@ -11,10 +11,31 @@ Python file for recursively finding maximum d-caps in F_q^n by eliminating the i
 
 '''
 
+def add_nocuda(q, *args):
+    return np.mod(np.sum(np.array(args), axis=0), q)
+
+def generate_coeffs(d, q, n):
+    l =[]
+    for i in range(q):
+        l += [i] * (d+1)
+
+    good_coeffs = []
+    for comb in permutations(l, d+1):
+        if add_nocuda(q, *comb) == 1:
+            good_coeffs.append(comb)
+    #print(set(good_coeffs))
+    return set(good_coeffs)
+    
+
 n = 3 if len(sys.argv) < 4 else int(sys.argv[3])
 q = 3 if len(sys.argv) < 4 else int(sys.argv[2])
-d = 1 if len(sys.argv) < 4 else int(sys.argv[1])
+d = 2 if len(sys.argv) < 4 else int(sys.argv[1])
+
 cache = [None] * (q ** n)
+if d > n:
+    d = n
+
+coeff_list = generate_coeffs(d, q, n)
 
 def generate_basis(n, index):
     arr = np.zeros(n, dtype = int)
@@ -27,65 +48,60 @@ def index_to_vector(n, q, index):
         vec[n - 1 - i] = index // (q ** (i)) % q
     return vec
 
-def vector_to_index(vector, n, q):
+def vector_to_index(vector, q, n):
     '''Takes the vector and converts it to the unique index under F_{fieldsize}^{n}'''
     assert(n == len(vector))
     index = 0
     for i in range(0, n):
         index += vector[n - 1 - i] * (q ** i)
-    return index
+    return int(index)
 
-def add_nocuda(q, *args):
-    return np.mod(np.sum(np.array(args), axis=0), q)
 
 if not __debug__:
-    debug_file = os.getcwd() + "\\logs\\" + str(q) + "_" + str(n) +"_debug.txt"
+    debug_file = os.getcwd() + "\\logs\\" + str(d)+ '_' + str(q) + "_" + str(n) + "_debug.txt"
     debug_log = open(debug_file, 'w+')
 
 
 def fill_initial_set(cap, vset, n=n, q=q, d=d):
     '''Mutates set to be the accurate hashset for the given cap.'''
     for vec in cap:
-        index= vector_to_index(vec, n, q)
+        index= vector_to_index(vec, q, n)
         vset[index] = False
 
     return vset
 
 def update_validset(cap, validset, d, q, n):
-    sm_set = Array('i', validset)
+    sm_set = Array('i', validset, lock=False)
     processes = []
-    for i in range (1, d + 1):
-        for comb in combinations(cap[:-1], i):
-            print("comb: {}".format(comb))
-            print("cap: {}".format(cap[-1]))
-            print("both: {}".format(list(comb).append(cap[-1])))
-            comb += cap[-1]
-            p = Process(target=mark_visible, args=(sm_set, comb, q, n))
-            processes.append(p)
-            p.start() 
+    #print("cap: {}".format(cap))
+    for comb in combinations(cap[:-1], d):
+        g = list(comb)
+        g.append(cap[-1])
+        p = Process(target=mark_visible, args=(sm_set, g, q, n))
+        processes.append(p)
+        p.start() 
     
     for p in processes:
         p.join()
     #print ("Validset: {} | sm_set: {}".format(valid_set, sm_set[:]))
+    #print("New Validset: {}".format([True if x == 1 else False for x in sm_set]))
     return [True if x == 1 else False for x in sm_set]
-    
-    
-def complete_update_validset(cap, validset, d, q, n):
-    sm_set = Array('i', validset)
-    processes = []
-    for i in range(1, d + 1):
-        for comb in combinations(cap, i + 1):
-            p = Process(target=mark_visible, args=(sm_set, comb, q, n))
-            processes.append(p)
-            p.start()
 
+def complete_update_validset(cap, validset, d, q, n):
+    sm_set = Array('i', validset, lock=False)
+    processes = []
+    #print("cap: {}".format(cap))
+    for comb in combinations(cap, d + 1):
+        p = Process(target=mark_visible, args=(sm_set, list(comb), q, n))
+        processes.append(p)
+        p.start() 
+    
     for p in processes:
         p.join()
-
+    #print ("Validset: {} | sm_set: {}".format(valid_set, sm_set[:]))
+    #print("New Validset: {}".format([True if x == 1 else False for x in sm_set]))
     return [True if x == 1 else False for x in sm_set]
-    
 
-# TODO: Write this method
 def mark_visible(shared_memory_set, points, q=3, n=3):
     '''
         Takes a set of points and marks every point which lies on the d-flat which is constructed by the (d+1) points
@@ -94,31 +110,29 @@ def mark_visible(shared_memory_set, points, q=3, n=3):
         points: list of d+1 points which make a d-flat.
         shared_memory_set: multiprocessing.Array(b, validset)
     '''
-    # Note: I am aware this is bad code. I am just writing it like this to find the commonality so I can generalize the pattern.
-    print(shared_memory_set)
-    print(points)
-    if len(points) == 2:
-        print("Removing 1 cap with 2 points")
-        all_add = set(permutations[2,2]) + set(permutations([0,1]))
-        for coeff in all_add:
-            point = add_nocuda(q, [a*b for a,b in zip(coeff, points)])
-            print(point)
-            shared_memory_set[vector_to_index(point)] = 0
-
-    if len(points) == 3:
-        all_add = set(permutations[2,2,0]) + set(permutations([0,0,1])) + set(permutations([1,1,2]))
-        for coeff in all_add:
-            point = add_nocuda(q, [a*b for a,b in zip(coeff, points)])
-            shared_memory_set[vector_to_index(point)] = 0
+    #print(shared_memory_set[:])
+    #print("Coeffs: {}".format(coeff_list))
+    #print("Points: {}".format(points))
+    
+    for coeff in coeff_list:
+        dotprod = [a * b for a,b in zip(coeff, points)]
+        point = add_nocuda(q, *dotprod)
+        #print("removing: {}".format(point))
+        #print("Points: {} | coeff: {}".format(points, coeff))
+        #print(" weird dot :{}".format([a * b for a,b in zip(coeff, points)]))
+        #print("Point: {}".format(point))
+        index = vector_to_index(point, q, n)
+        #print("removing index: {}".format(index))
+        shared_memory_set[index] = 0
             
 
-
-def find_maximum_cap(n, q, d=1, current_cap=[np.zeros(n, dtype=int)], current_index=1, hashset=None):
+def find_maximum_cap(n, q, d, current_cap=[np.zeros(n, dtype=int)], current_index=1, hashset=None):
     '''n = size of vector
         q = possible values in vector
         current_sum = vector with the sum of each vector in the field.
         '''
-    #print("current cap: {} | Current validset: {}".format(current_cap, hashset))
+    if not __debug__:
+        debug_log.write("current cap: {} \nCurrent validset: {}".format(current_cap, hashset))
     
     global cache
 
@@ -146,18 +160,19 @@ def find_maximum_cap(n, q, d=1, current_cap=[np.zeros(n, dtype=int)], current_in
 
 if __name__ == '__main__':
     valid_set = [True] * (q ** n)
+    
     if not __debug__:
         print("Generating debug logs")
         if n > 1:
             initial_cap = [np.zeros(n, dtype=int), generate_basis(n,0), generate_basis(n, 1)]
         else:
             initial_cap = [np.zeros(n, dtype=int)]
-        starter_hashset = fill_initial_set(initial_cap, valid_set, n, q)
-        maximum_cap = find_maximum_cap(n, q, current_cap=initial_cap, hashset= starter_hashset)
+        starter_hashset = complete_update_validset(initial_cap, valid_set,d,q,n)
+        maximum_cap = find_maximum_cap(n, q, d, current_cap=initial_cap, hashset= starter_hashset)
         debug_log.close()   
     else:
-        previous_sol = os.getcwd() + "\\logs\\" + str(q) + "_" + str(n - 1) + ".dat"
-        current_sol = os.getcwd() + "\\logs\\" + str(q) + "_" + str(n) + ".dat"
+        previous_sol = os.getcwd() + "\\logs\\" + str(d)+ '_' + str(q) + "_" + str(n - 1) + ".dat"
+        current_sol = os.getcwd() + "\\logs\\" + str(d)+ '_' + str(q) + "_" + str(n) + ".dat"
         if path.exists(current_sol):
             print("Solution previously found.")
             with open(current_sol, 'rb') as f:
@@ -174,10 +189,10 @@ if __name__ == '__main__':
             else:
                 initial_cap = [np.zeros(n, dtype=int)]
 
-            starter_hashset = fill_initial_set(initial_cap, valid_set, n, q)
-            maximum_cap = find_maximum_cap(n, q, current_cap=initial_cap, hashset= starter_hashset)
+            starter_hashset = complete_update_validset(initial_cap, valid_set, d, q, n)
+            maximum_cap = find_maximum_cap(n, q, d, current_cap=initial_cap, hashset= starter_hashset)
 
-            with open(os.getcwd() + "\\logs\\" + str(q) + "_" + str(n) + ".dat", "wb") as file:
+            with open(os.getcwd() + "\\logs\\" + str(d)+ '_' + str(q) + "_" + str(n) + ".dat", "wb") as file:
                 pickle.dump(maximum_cap, file)
 
     response = "A maximum cap for d = {}, F = {}^{}, has size {} and is: {}".format(d, q, n, len(maximum_cap), maximum_cap)

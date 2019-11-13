@@ -43,6 +43,7 @@ def generate_basis(n, index):
     return arr
 
 def index_to_vector(n, q, index):
+    '''Converts an index to the vector in F_q^n'''
     vec = np.zeros(n, dtype=int)
     for i in range(n):
         vec[n - 1 - i] = index // (q ** (i)) % q
@@ -60,15 +61,6 @@ def vector_to_index(vector, q, n):
 if not __debug__:
     debug_file = os.getcwd() + "\\logs\\" + str(d)+ '_' + str(q) + "_" + str(n) + "_debug.txt"
     debug_log = open(debug_file, 'w+')
-
-
-def fill_initial_set(cap, vset, n=n, q=q, d=d):
-    '''Mutates set to be the accurate hashset for the given cap.'''
-    for vec in cap:
-        index= vector_to_index(vec, q, n)
-        vset[index] = False
-
-    return vset
 
 def update_validset(cap, validset, d, q, n):
     sm_set = Array('i', validset, lock=False)

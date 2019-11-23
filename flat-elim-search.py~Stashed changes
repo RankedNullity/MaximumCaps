@@ -24,7 +24,7 @@ def generate_coeffs(d, q, n):
     for comb in permutations(l, d+1):
         if add_nocuda(q, *comb) == 1:
             good_coeffs.append(comb)
-    print("Generating coeffs")
+    #print(set(good_coeffs))
     return set(good_coeffs)
     
 
@@ -36,7 +36,7 @@ cache = [None] * (q ** n)
 if d > n:
     d = n
 
-#
+coeff_list = generate_coeffs(d, q, n)
 
 def generate_basis(n, index):
     arr = np.zeros(n, dtype = int)
@@ -63,14 +63,14 @@ if not __debug__:
     debug_file = os.getcwd() + "\\logs\\" + str(d)+ '_' + str(q) + "_" + str(n) + "_debug.txt"
     debug_log = open(debug_file, 'w+')
 
-def update_validset(cap, validset, d, q, n, coeff_list):
+def update_validset(cap, validset, d, q, n):
     sm_set = Array('i', validset, lock=False)
     processes = []
     #print("cap: {}".format(cap))
     for comb in combinations(cap[:-1], d):
         g = list(comb)
         g.append(cap[-1])
-        p = Process(target=mark_visible, args=(sm_set, g, coeff_list, q, n ))
+        p = Process(target=mark_visible, args=(sm_set, g, q, n))
         processes.append(p)
         p.start() 
     
@@ -80,14 +80,14 @@ def update_validset(cap, validset, d, q, n, coeff_list):
     #print("New Validset: {}".format([True if x == 1 else False for x in sm_set]))
     return [True if x == 1 else False for x in sm_set]
 
-def complete_update_validset(cap, validset, d, q, n, coeff_list):
+def complete_update_validset(cap, validset, d, q, n):
     sm_set = Array('i', validset, lock=False)
     processes = []
     #print("cap: {}".format(cap))
     for comb in combinations(cap, d + 1):
-        p = Process(target=mark_visible, args=(sm_set, list(comb), coeff_list, q, n))
+        p = Process(target=mark_visible, args=(sm_set, list(comb), q, n))
         processes.append(p)
-        p.start()
+        p.start() 
     
     for p in processes:
         p.join()
@@ -95,7 +95,7 @@ def complete_update_validset(cap, validset, d, q, n, coeff_list):
     #print("New Validset: {}".format([True if x == 1 else False for x in sm_set]))
     return [True if x == 1 else False for x in sm_set]
 
-def mark_visible(shared_memory_set, points, coeff_list, q=3, n=3):
+def mark_visible(shared_memory_set, points, q=3, n=3):
     '''
         Takes a set of points and marks every point which lies on the d-flat which is constructed by the (d+1) points
         and marks the corresponding index in shared_memory_set as False. 
@@ -119,14 +119,14 @@ def mark_visible(shared_memory_set, points, coeff_list, q=3, n=3):
         shared_memory_set[index] = 0
             
 
-def find_maximum_cap(n, q, d, coeff_list, current_cap=[np.zeros(n, dtype=int)], current_index=1, hashset=None):
+def find_maximum_cap(n, q, d, current_cap=[np.zeros(n, dtype=int)], current_index=1, hashset=None):
     '''n = size of vector
         q = possible values in vector
         current_sum = vector with the sum of each vector in the field.
         '''
     if not __debug__:
         debug_log.write("current cap: {} \nCurrent validset: {}".format(current_cap, hashset))
-    #print("current cap: {} \nCurrent validset: {}".format(current_cap, hashset))
+    
     global cache
 
     maximum_cap = current_cap
@@ -143,8 +143,8 @@ def find_maximum_cap(n, q, d, coeff_list, current_cap=[np.zeros(n, dtype=int)], 
         #print("Current cap before: {}".format(current_cap))
         if hashset[i]:
             current_cap.append(current_vec)
-            vs_new = update_validset(current_cap, hashset, d, q, n, coeff_list=coeff_list)
-            maximal_cap = find_maximum_cap(n, q, d, current_cap=current_cap.copy(), current_index=i + 1, hashset=vs_new, coeff_list=coeff_list)
+            vs_new = update_validset(current_cap, hashset, d, q, n)
+            maximal_cap = find_maximum_cap(n, q, d, current_cap.copy(), i + 1, hashset=vs_new)
             current_cap.pop()
             if len(maximal_cap) > len(maximum_cap):
                 maximum_cap = maximal_cap
@@ -153,7 +153,6 @@ def find_maximum_cap(n, q, d, coeff_list, current_cap=[np.zeros(n, dtype=int)], 
 
 if __name__ == '__main__':
     valid_set = [True] * (q ** n)
-    coeff_list = generate_coeffs(d, q, n)
     start_time = time.time()
     if not __debug__:
         print("Generating debug logs")
@@ -161,8 +160,8 @@ if __name__ == '__main__':
             initial_cap = [np.zeros(n, dtype=int), generate_basis(n,0), generate_basis(n, 1)]
         else:
             initial_cap = [np.zeros(n, dtype=int)]
-        starter_hashset = complete_update_validset(initial_cap, valid_set,d,q,n, coeff_list)
-        maximum_cap = find_maximum_cap(n, q, d, current_cap=initial_cap, hashset= starter_hashset, coeff_list=coeff_list)
+        starter_hashset = complete_update_validset(initial_cap, valid_set,d,q,n)
+        maximum_cap = find_maximum_cap(n, q, d, current_cap=initial_cap, hashset= starter_hashset)
         debug_log.close()   
     else:
         previous_sol = os.getcwd() + "\\logs\\" + str(d)+ '_' + str(q) + "_" + str(n - 1) + ".dat"
@@ -183,12 +182,12 @@ if __name__ == '__main__':
             else:
                 initial_cap = [np.zeros(n, dtype=int)]
 
-            starter_hashset = complete_update_validset(initial_cap, valid_set, d, q, n, coeff_list)
-            maximum_cap = find_maximum_cap(n, q, d, current_cap=initial_cap, hashset= starter_hashset, coeff_list=coeff_list)
+            starter_hashset = complete_update_validset(initial_cap, valid_set, d, q, n)
+            maximum_cap = find_maximum_cap(n, q, d, current_cap=initial_cap, hashset= starter_hashset)
 
             with open(os.getcwd() + "\\logs\\" + str(d)+ '_' + str(q) + "_" + str(n) + ".dat", "wb") as file:
                 pickle.dump(maximum_cap, file)
 
     response = "A maximum cap for d = {}, F = {}^{}, has size {} and is: {}".format(d, q, n, len(maximum_cap), maximum_cap)
     print(response)
-    print("This took {} seconds".format(-(start_time - time.time())))
+    print("This took {} time".format(-(start_time - time.time())))

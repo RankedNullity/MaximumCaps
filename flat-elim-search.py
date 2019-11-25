@@ -118,7 +118,7 @@ def mark_visible(shared_memory_set, points, q=3, n=3):
         shared_memory_set[index] = 0
             
 
-def find_maximum_cap(n, q, d, current_cap=[np.zeros(n, dtype=int)], current_index=1, hashset=None):
+def find_maximum_cap(n, q, d, current_cap=[np.zeros(n, dtype=int)], current_index=1, hashset=None, maximum_caps=[]):
     '''n = size of vector
         q = possible values in vector
         current_sum = vector with the sum of each vector in the field.
@@ -143,12 +143,15 @@ def find_maximum_cap(n, q, d, current_cap=[np.zeros(n, dtype=int)], current_inde
         if hashset[i]:
             current_cap.append(current_vec)
             vs_new = update_validset(current_cap, hashset, d, q, n)
-            maximal_cap = find_maximum_cap(n, q, d, current_cap.copy(), i + 1, hashset=vs_new)
+            maximal_cap, _ = find_maximum_cap(n, q, d, current_cap.copy(), i + 1, hashset=vs_new)
             current_cap.pop()
             if len(maximal_cap) > len(maximum_cap):
+                maximum_caps = []
                 maximum_cap = maximal_cap
+            if len(maximal_cap) >= len(maximal_cap):
+                maximum_caps.append(maximal_cap)
 
-    return maximum_cap
+    return maximum_cap, maximum_caps
 
 if __name__ == '__main__':
     valid_set = [True] * (q ** n)
@@ -160,11 +163,12 @@ if __name__ == '__main__':
         else:
             initial_cap = [np.zeros(n, dtype=int)]
         starter_hashset = complete_update_validset(initial_cap, valid_set,d,q,n)
-        maximum_cap = find_maximum_cap(n, q, d, current_cap=initial_cap, hashset= starter_hashset)
+        maximum_cap, maximum_caps = find_maximum_cap(n, q, d, current_cap=initial_cap, hashset= starter_hashset)
         debug_log.close()   
     else:
         previous_sol = os.getcwd() + "\\logs\\" + str(d)+ '_' + str(q) + "_" + str(n - 1) + ".dat"
         current_sol = os.getcwd() + "\\logs\\" + str(d)+ '_' + str(q) + "_" + str(n) + ".dat"
+        complete_log = os.getcwd() + "\\logs\\" + str(d)+ '_' + str(q) + "_" + str(n) + "complete.dat"
         if path.exists(current_sol):
             print("Solution previously found.")
             with open(current_sol, 'rb') as f:
@@ -182,10 +186,12 @@ if __name__ == '__main__':
                 initial_cap = [np.zeros(n, dtype=int)]
 
             starter_hashset = complete_update_validset(initial_cap, valid_set, d, q, n)
-            maximum_cap = find_maximum_cap(n, q, d, current_cap=initial_cap, hashset= starter_hashset)
+            maximum_cap, maximum_caps = find_maximum_cap(n, q, d, current_cap=initial_cap, hashset= starter_hashset)
 
             with open(os.getcwd() + "\\logs\\" + str(d)+ '_' + str(q) + "_" + str(n) + ".dat", "wb") as file:
                 pickle.dump(maximum_cap, file)
-
+            with open(os.getcwd() + "\\logs\\" + str(d)+ '_' + str(q) + "_" + str(n) + "complete.dat", "wb") as file:
+                pickle.dump(maximum_caps, file)
+            
     response = "A maximum cap for d = {}, F = {}^{}, has size {} and is: {}".format(d, q, n, len(maximum_cap), maximum_cap)
     print(response)

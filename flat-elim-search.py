@@ -146,9 +146,8 @@ def find_maximum_cap(n, q, d, coeff_list, current_cap=[], current_index=1, hashs
                 maximum_cap = maximal_cap
             if len(maximal_cap) >= len(maximum_cap):
                 maximum_caps.append(maximal_cap)
-    if maximum_caps == []:
+    if len(depth) == 0 and maximum_caps == []:
         maximum_caps.append(maximum_cap)
-    
     return maximum_cap, maximum_caps
 
 if __name__ == '__main__':

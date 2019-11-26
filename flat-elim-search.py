@@ -225,8 +225,8 @@ if __name__ == '__main__':
                         print()
             else:
                 for d in range(n, 0, -1):
-                        max_caps = save_caps(d,q,n)
-                        print()
+                    max_caps = save_caps(d,q,n)
+                    print()
 
             
     

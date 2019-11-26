@@ -25,6 +25,7 @@ def generate_coeffs(d, q, n):
         if add_nocuda(q, *comb) == 1:
             good_coeffs.append(comb)
     print("Generating coefficients for d = {} , q = {}, n = {}".format(d,q,n))
+    #print("coeffs: {}".format(set(good_coeffs)))
     return set(good_coeffs)
 
 def generate_basis(n, index):
@@ -110,19 +111,15 @@ def mark_visible(shared_memory_set, points, coeff_list, q=3, n=3):
         #print("removing index: {}".format(index))
         shared_memory_set[index] = 0
             
-def find_maximum_cap(n, q, d, coeff_list, current_cap=[], current_index=1, hashset=None, maximum_caps=[], cache=[]):
+def find_maximum_cap(n, q, d, coeff_list, current_cap=[], current_index=1, hashset=None, maximum_caps=[], cache=[], depth = []):
     '''n = size of vector
         q = possible values in vector
         current_sum = vector with the sum of each vector in the field.
         '''
     if not __debug__:
         debug_log.write("current cap: {} \nCurrent validset: {}\n".format(current_cap, hashset))
-    #print("current cap: {} \nCurrent validset: {}".format(current_cap, hashset))
 
     maximum_cap = current_cap
-
-    if current_index >= q ** n:
-        print("reached end with cap: {}".format(maximum_cap))
     for i in range(current_index, q ** n):
         if cache[i] is None:
             current_vec = index_to_vector(n, q, i)
@@ -130,12 +127,19 @@ def find_maximum_cap(n, q, d, coeff_list, current_cap=[], current_index=1, hashs
         else:
             current_vec = cache[i]
             #print("Using Cached value")
-
-        #print("Current cap before: {}".format(current_cap))
+        print("Currently Searching (depth, index):", end='')
+        for dep in enumerate(depth):
+            print(" {} |".format(dep), end='')
+        print("", end='\r')    
         if hashset[i]:
             current_cap.append(current_vec)
-            vs_new = update_validset(current_cap, hashset, d, q, n, coeff_list=coeff_list)
-            maximal_cap, _ = find_maximum_cap(n, q, d, current_cap=current_cap.copy(), current_index=i + 1, hashset=vs_new, coeff_list=coeff_list, cache=cache)
+            if len(current_cap) > d:
+                #print("full. len = {} | d = {}".format(len(current_cap), d))
+                vs_new = update_validset(current_cap, hashset, d, q, n, coeff_list=coeff_list)
+            else:
+                #print("not full")
+                vs_new = complete_update_validset(current_cap, hashset, len(current_cap), q, n, coeff_list=coeff_list)
+            maximal_cap, _ = find_maximum_cap(n, q, d, current_cap=current_cap.copy(), current_index=i + 1, hashset=vs_new, coeff_list=coeff_list, cache=cache, depth=depth + [i])
             current_cap.pop()
             if len(maximal_cap) > len(maximum_cap):
                 maximum_caps = []
@@ -144,6 +148,7 @@ def find_maximum_cap(n, q, d, coeff_list, current_cap=[], current_index=1, hashs
                 maximum_caps.append(maximal_cap)
     if maximum_caps == []:
         maximum_caps.append(maximum_cap)
+    
     return maximum_cap, maximum_caps
 
 if __name__ == '__main__':
@@ -179,24 +184,30 @@ if __name__ == '__main__':
                 with open(complete_log, 'rb') as f:
                     maximum_caps = pickle.load(f)
             else:
-                if path.exists(previous_sol):
-                    print("Continuing search using lower dimensional embedded cap")
-                    with open(previous_sol, 'rb') as f:
-                        initial_cap = pickle.load(f)
-                    for i, vec in enumerate(initial_cap):
-                        initial_cap[i] = np.concatenate((vec, np.zeros(1)), axis = None).astype(int)
-                elif n > 1:
-                    initial_cap = [np.zeros(n, dtype=int), generate_basis(n,0), generate_basis(n, 1)]
+                if d == n:
+                    maximum_cap = [np.zeros(n, dtype=int)] + [generate_basis(n, i) for i in range(n)]
+                    maximum_caps = [maximum_cap]
+                    print("d = n, so any {} points is a cap.".format(d + 1))
                 else:
-                    initial_cap = [np.zeros(n, dtype=int)]
-                print("Starting Search...")
-                starter_hashset = complete_update_validset(initial_cap, valid_set, d, q, n, coeff_list)
-                maximum_cap, maximum_caps = find_maximum_cap(n, q, d, current_cap=initial_cap, hashset= starter_hashset, coeff_list=coeff_list, cache=cache)
+                    if path.exists(previous_sol):
+                        print("Continuing search using lower dimensional embedded cap")
+                        with open(previous_sol, 'rb') as f:
+                            initial_cap = pickle.load(f)
+                        for i, vec in enumerate(initial_cap):
+                            initial_cap[i] = np.concatenate((vec, np.zeros(1)), axis = None).astype(int)
+                    elif n > 1:
+                        initial_cap = [np.zeros(n, dtype=int), generate_basis(n,0), generate_basis(n, 1)]
+                    else:
+                        initial_cap = [np.zeros(n, dtype=int)]
+                    print("Starting Search...")
+                    starter_hashset = complete_update_validset(initial_cap, valid_set, d, q, n, coeff_list)
+                    maximum_cap, maximum_caps = find_maximum_cap(n, q, d, current_cap=initial_cap, hashset= starter_hashset, coeff_list=coeff_list, cache=cache)
+                    print()
 
                 with open(current_sol,'wb') as file:
                     pickle.dump(maximum_cap, file)
                 with open(complete_log, "wb") as file:
-                    pickle.dump(maximum_caps, file)
+                        pickle.dump(maximum_caps, file)
             print("{} caps of size {} were found.".format(len(maximum_caps), len(maximum_caps[0])))
             print("Example Cap: {}".format(maximum_caps[0]))
             return maximum_caps

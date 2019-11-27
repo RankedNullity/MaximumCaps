@@ -155,10 +155,9 @@ if __name__ == '__main__':
         cache = [None] * (q ** n)
         print("Generating debug logs")
         start_time = time.time()
-        if n > 1:
-            initial_cap = [np.zeros(n, dtype=int), generate_basis(n,0), generate_basis(n, 1)]
-        else:
-            initial_cap = [np.zeros(n, dtype=int)]
+        initial_cap = [np.zeros(n, dtype=int)]
+        for i in range(n):
+            initial_cap.append(generate_basis(n,i))
         starter_hashset = complete_update_validset(initial_cap, valid_set,d,q,n, coeff_list)
         maximum_cap, maximum_caps = find_maximum_cap(n, q, d, current_cap=initial_cap, hashset= starter_hashset, coeff_list=coeff_list, cache=cache)
         debug_log.close()   
@@ -185,10 +184,11 @@ if __name__ == '__main__':
                         initial_cap = pickle.load(f)
                     for i, vec in enumerate(initial_cap):
                         initial_cap[i] = np.concatenate((vec, np.zeros(1)), axis = None).astype(int)
-                elif n > 1:
-                    initial_cap = [np.zeros(n, dtype=int), generate_basis(n,0), generate_basis(n, 1)]
                 else:
                     initial_cap = [np.zeros(n, dtype=int)]
+                    for i in range(n):
+                        initial_cap.append(generate_basis(n,i))
+                
                 print("Starting Search...")
                 starter_hashset = complete_update_validset(initial_cap, valid_set, d, q, n, coeff_list)
                 maximum_cap, maximum_caps = find_maximum_cap(n, q, d, current_cap=initial_cap, hashset= starter_hashset, coeff_list=coeff_list, cache=cache)

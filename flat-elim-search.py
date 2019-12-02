@@ -127,10 +127,10 @@ def find_maximum_cap(n, q, d, coeff_list, current_cap=[], current_index=1, hashs
         else:
             current_vec = cache[i]
             #print("Using Cached value")
-        print("Currently Searching (depth, index):", end='')
-        for dep in enumerate(depth):
-            print(" {} |".format(dep), end='')
-        print("", end='\r')    
+        #print("Currently Searching (depth, index):", end='')
+        #for dep in enumerate(depth):
+            #print(" {} |".format(dep), end='')
+        #print("", end='\r')    
         if hashset[i]:
             current_cap.append(current_vec)
             if len(current_cap) > d:

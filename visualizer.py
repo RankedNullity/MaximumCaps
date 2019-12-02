@@ -78,9 +78,9 @@ def mark_box(frame, sub_boxes, point, q, n):
 
 if __name__ == '__main__':
     if len(sys.argv) == 4:
-        d = sys.argv[1]
-        q = sys.argv[2]
-        n = sys.argv[3]
+        d = int(sys.argv[1])
+        q = int(sys.argv[2])
+        n = int(sys.argv[3])
     else: 
         d = 3
         q = 3

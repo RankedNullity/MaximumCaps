@@ -87,7 +87,7 @@ if __name__ == '__main__':
         n = 4
 
     std_width = 80
-    padding = 27
+    padding = q ** n
     width = (std_width + padding) * q ** ((n+1) // 2)
     height = (std_width + padding) * q ** (n // 2)
     output = os.path.join(os.getcwd(), 'result.png')
@@ -100,7 +100,7 @@ if __name__ == '__main__':
         canvas_img = np.zeros((height,  width , 3), np.uint8)
         canvas_img.fill(255)
         
-        sub_boxes = draw_grid(canvas_img, q, n, padding)
+        sub_boxes = draw_grid(canvas_img, q, n , padding)
         for point in cap:
             mark_box(canvas_img, sub_boxes, point, q, n)
 

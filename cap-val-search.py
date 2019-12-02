@@ -37,7 +37,7 @@ q = 3 if len(sys.argv) < 3 else int(sys.argv[1])
 cache = [None] * (q ** n)
 
 if not __debug__:
-    debug_file = os.getcwd() + "\\logs\\" + str(q) + "_" + str(n) +"_debug.txt"
+    debug_file = os.getcwd() + "\\results\\" + str(q) + "_" + str(n) +"_debug.txt"
     debug_log = open(debug_file, 'w+')    
 
 def cap_isLinear(cap, n, q):
@@ -126,7 +126,7 @@ def find_maximum_cap(n, q, d=1, current_cap= [np.zeros(n, dtype=int)], current_i
 EMPTY_HASHSET = [False] * (q ** n)
 
 if not __debug__:
-    print("Generating debug logs")
+    print("Generating debug results")
     if n > 1:
         initial_cap = [np.zeros(n, dtype=int), generate_basis(n,0), generate_basis(n, 1)]
     else:
@@ -135,8 +135,8 @@ if not __debug__:
     maximum_cap = find_maximum_cap(n, q, current_cap=initial_cap, hashset= starter_hashset)
     debug_log.close()   
 else:
-    previous_sol = os.getcwd() + "\\logs\\" + str(q) + "_" + str(n - 1) + ".dat"
-    current_sol = os.getcwd() + "\\logs\\" + str(q) + "_" + str(n) + ".dat"
+    previous_sol = os.getcwd() + "\\results\\" + str(q) + "_" + str(n - 1) + ".dat"
+    current_sol = os.getcwd() + "\\results\\" + str(q) + "_" + str(n) + ".dat"
     if path.exists(current_sol):
         print("Solution previously found.")
         with open(current_sol, 'rb') as f:
@@ -156,7 +156,7 @@ else:
         starter_hashset = fill_initial_set(initial_cap, EMPTY_HASHSET, n, q)
         maximum_cap = find_maximum_cap(n, q, current_cap=initial_cap, hashset= starter_hashset)
 
-        with open(os.getcwd() + "\\logs\\" + str(q) + "_" + str(n) + ".dat", "wb") as file:
+        with open(os.getcwd() + "\\results\\" + str(q) + "_" + str(n) + ".dat", "wb") as file:
             pickle.dump(maximum_cap, file)
 
 response = "A maximum cap for d = {}, F = {}, has size {} and is: {}".format(n, q, len(maximum_cap), maximum_cap)

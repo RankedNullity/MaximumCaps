@@ -52,7 +52,7 @@ if not __debug__:
     n = 3 if len(sys.argv) < 4 else int(sys.argv[3])
     q = 3 if len(sys.argv) < 4 else int(sys.argv[2])
     d = 2 if len(sys.argv) < 4 else int(sys.argv[1])
-    debug_file = os.getcwd() + "\\logs\\" + str(d)+ '_' + str(q) + "_" + str(n) + "_debug.txt"
+    debug_file = os.getcwd() + "\\results\\" + str(d)+ '_' + str(q) + "_" + str(n) + "_debug.txt"
     debug_log = open(debug_file, 'w+')
 
 def update_validset(cap, validset, d, q, n, coeff_list):
@@ -157,7 +157,7 @@ if __name__ == '__main__':
         coeff_list = generate_coeffs(d, q, n)
         valid_set = [True] * (q ** n)
         cache = [None] * (q ** n)
-        print("Generating debug logs")
+        print("Generating debug results")
         start_time = time.time()
         initial_cap = [np.zeros(n, dtype=int)]
         for i in range(n):
@@ -174,9 +174,9 @@ if __name__ == '__main__':
             valid_set = [True] * (q ** n)
             coeff_list = generate_coeffs(d, q, n)
             cache = [None] * (q ** n)
-            previous_sol = os.getcwd() + "\\logs\\" + str(d)+ '_' + str(q) + "_" + str(n - 1) + ".dat"
-            current_sol = os.getcwd() + "\\logs\\" + str(d)+ '_' + str(q) + "_" + str(n) + ".dat"
-            complete_log = os.getcwd() + "\\logs\\" + str(d)+ '_' + str(q) + "_" + str(n) + "_all.dat"
+            previous_sol = os.getcwd() + "\\results\\" + str(d)+ '_' + str(q) + "_" + str(n - 1) + ".dat"
+            current_sol = os.getcwd() + "\\results\\" + str(d)+ '_' + str(q) + "_" + str(n) + ".dat"
+            complete_log = os.getcwd() + "\\results\\" + str(d)+ '_' + str(q) + "_" + str(n) + "_all.dat"
             if path.exists(complete_log):
                 print("Solution previously found.")
                 with open(complete_log, 'rb') as f:

@@ -42,11 +42,11 @@ def draw_grid_wide(frame, p1, p2, q, padding):
     x2, y2 = p2
     box_width = (x2 - x1) // q - padding
     sub_boxes = []
-    sub_boxes.append(((x1, y1), (x1 + box_width, y1 + box_width)))
+    sub_boxes.append(((x1+ padding // 2, y1 + padding // 2), (x1 + box_width, y1 + box_width)))
     for i in range(1, q):
         x = x1 + (box_width + padding) * i 
         cv2.line(frame, (x, y1), (x, y1 + box_width), (0,0,0), thickness= padding // 3)
-        sub_boxes.append(((x + padding // 2, y1), (x + box_width, y1 + box_width)))
+        sub_boxes.append(((x + padding // 2, y1 + padding // 2), (x + box_width, y1 + box_width)))
     return sub_boxes
 
 def draw_grid(frame, q, n, padding):
@@ -73,8 +73,8 @@ def mark_box(frame, sub_boxes, point, q, n):
     p1, p2 = sub_boxes[idx]
     x1, y1 = p1
     x2, y2 = p2
-    cv2.line(frame, p1, p2, color = (255,0,0))
-    cv2.line(frame, (x1, y2), (x2, y1), color = (255,0,0))
+    cv2.line(frame, p1, p2, color = (255,0,0), thickness=2)
+    cv2.line(frame, (x1, y2), (x2, y1), color = (255,0,0), thickness=2)
 
 if __name__ == '__main__':
     if len(sys.argv) == 4:

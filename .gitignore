@@ -2,3 +2,5 @@ results/*.txt
 .vscode/*
 result.png
 imgs/*
+test.py
+__pycache__

@@ -1,19 +1,16 @@
+"""Python script for visualizing caps generated in one of the search methods in this library. 
+
+Jaron Wang"""
 import numpy as np 
 import pickle
 import sys
 import csv
 import cv2
 import os
+from affine_space_core import vector_to_index
 
 
-def vector_to_index(vector, q, n):
-    '''Takes the vector and converts it to the unique index under F_{fieldsize}^{n}'''
-    assert(n == len(vector))
-    index = 0
-    for i in range(0, n):
-        index += vector[n - 1 - i] * (q ** i)
-    return int(index)
-
+""" Draws the 2-dimensional grid onto frame using the top left corner p1 and bottom right corner p2"""
 def draw_grid_full(frame, p1, p2, q, padding):
     x1, y1 = p1
     x2, y2 = p2
@@ -36,7 +33,7 @@ def draw_grid_full(frame, p1, p2, q, padding):
 
     return sub_boxes
 
-# Draws the wide grid starting at x1, y1 and returns the the top left corner of the sub-boxes.
+""" Draws the wide grid starting at x1, y1 and returns the the top left corner of the sub-boxes."""
 def draw_grid_wide(frame, p1, p2, q, padding):
     x1, y1 = p1
     x2, y2 = p2
@@ -49,6 +46,7 @@ def draw_grid_wide(frame, p1, p2, q, padding):
         sub_boxes.append(((x + padding // 2, y1 + padding // 2), (x + box_width, y1 + box_width)))
     return sub_boxes
 
+""" Draws the grid and returns the necessary params of the sub-boxes."""
 def draw_grid(frame, q, n, padding):
     height, width, _ = frame.shape
     if n % 2 == 1:
@@ -68,6 +66,8 @@ def draw_grid(frame, q, n, padding):
     
     return sub_boxes
 
+
+""" Marks the given box with an X"""
 def mark_box(frame, sub_boxes, point, q, n):
     idx = vector_to_index(point, q, n)
     p1, p2 = sub_boxes[idx]
@@ -100,11 +100,9 @@ if __name__ == '__main__':
         canvas_img = np.zeros((height,  width , 3), np.uint8)
         canvas_img.fill(255)
         
-        sub_boxes = draw_grid(canvas_img, q, n , padding)
+        sub_boxes = draw_grid(canvas_img, q, n + 4 , padding)
         for point in cap:
             mark_box(canvas_img, sub_boxes, point, q, n)
-
-        #print("End boxes: {}".format(sub_boxes))
         cv2.imwrite(output, canvas_img)
     else:
         cap_path = os.path.join(os.path.join(os.getcwd(), 'results'), str(d) + '_' + str(q) + '_' + str(n) + '_all.dat')

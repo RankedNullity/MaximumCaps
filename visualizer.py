@@ -84,12 +84,12 @@ if __name__ == '__main__':
     else: 
         d = 3
         q = 3
-        n = 4
+        n = 3
 
     std_width = 4096
     padding = q ** n
     width = std_width
-    height = std_width
+    height = std_width if n % 2 == 0 else int(std_width / 3)
     output = os.path.join(os.getcwd(), 'result.png')
 
     if __debug__:

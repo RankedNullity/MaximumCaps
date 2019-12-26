@@ -37,6 +37,14 @@ This does better in a more powerful computer as the the update validset part of 
 The results from these algorithm are found in ./results/ and are of the format d_q_n.dat and d_q_n_all.dat . The former contains just one maximum cap and the latter contains all of the maximum caps. In addition, there is a visualizer.py file for outputing a png for each 
 cap. The visualizer.py looks for the data files in the results to do so. Example outputs:
 
+Example 1-caps in F_3^3:
+![Example 1](https://github.com/TheNightly/MaximumCap-Search/blob/master/examples/1_3_3%20(1).png)
+
+![Example 3](https://github.com/TheNightly/MaximumCap-Search/blob/master/examples/1_3_3%20(2).png)
+
+Example 1-cap in F_3^4:
+![Example 2](https://github.com/TheNightly/MaximumCap-Search/blob/master/examples/1_3_4.png)
+
 ## Running the Code
 ### flat-elim-search.py
 Two possible arguments

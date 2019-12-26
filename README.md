@@ -38,8 +38,9 @@ The results from these algorithm are found in ./results/ and are of the format d
 cap. The visualizer.py looks for the data files in the results to do so. Example outputs:
 
 Example 1-caps in F_3^3:
+(1)
 ![Example 1](https://github.com/TheNightly/MaximumCap-Search/blob/master/examples/1_3_3%20(1).png)
-
+(2)
 ![Example 3](https://github.com/TheNightly/MaximumCap-Search/blob/master/examples/1_3_3%20(2).png)
 
 Example 1-cap in F_3^4:
@@ -48,23 +49,32 @@ Example 1-cap in F_3^4:
 ## Running the Code
 ### flat-elim-search.py
 Two possible arguments
+
 ```py flat-elim-search.py d q n```
+
 This runs the search for a d-cap in F_q^n.
+
 ```py flat-elim-search.py n```
+
 This finds all d-caps in F_3^n for d in [1,n].
 You can also specify n <= 0, and it will do this for all n until terminated.
 
 Running in debug mode forces a search to be done and records the time in ms it takes to complete. Otherwise, it will just use a previously found result if it exists. 
 ### cap-val-search.py
 Currently variable d is not supported. Windows:
+
 ```py ./cap-val-search.py q n```
+
 Example: (finds a 1-cap in F_3^5)
+
 ```py ./cap-val-search.py 3 5```
+
 Running it with the debug flag (-O) causes all the caps it iterates to be written to a debug file. 
 
 ### visualizer.py
 ```py ./cap-val-search.py d q n```
-```py ./cap-val-search.py q n```
+
+Outputs all the pngs for the d-cap in F_q^n in the directory ```./results/d_q_n``` with the number of the order in which the cap was found. Running this script with the debug flag causes it to output a single file as ```./result.png```
 
 ## Known Issues
 - [ ] While the parameter q is a parameter in all the files given, changing this parameter to a value which is not 3 is currently not supported. (in contexts where d and n are also specified). This is partially due to the fact that we are only in a field for certain values of q.

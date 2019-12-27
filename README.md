@@ -1,4 +1,4 @@
-# Maximum Cap Search
+# Maximum Caps
 A repository containing scripts for finding maximum caps by Jaron Wang with guidance from [Professor Robert Won](https://faculty.washington.edu/robwon/index.html) for the WXML group "The Card Game Set and Affine Geometry" Fall Quarter 2019.
 
 More information on caps can be found [[here](https://arxiv.org/abs/1809.05117)]. 
